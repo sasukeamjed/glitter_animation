@@ -4,9 +4,9 @@ import 'dart:math' as math;
 void main() => runApp(MyApp());
 
 const _width = 300.0;
-const _height = 300.0;
-const _duration = Duration(milliseconds: 500);
-final _colorTween = ColorTween(begin: Colors.green, end: Colors.transparent);
+const _height = 500.0;
+const _duration = Duration(milliseconds: 300);
+final _random = math.Random();
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -34,7 +34,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin{
 
   AnimationController _controller;
-  Animation _animation;
+//  Animation _animation;
+  
+  Color _getRandomColor(){
+    return Color.fromARGB(255, _random.nextInt(255), _random.nextInt(255), _random.nextInt(255));
+  }
 
   @override
   void initState() {
@@ -43,7 +47,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       vsync: this,
       duration: _duration,
     );
-    _animation= _colorTween.animate(_controller);
     _controller.addStatusListener((AnimationStatus status){
       if(status == AnimationStatus.completed){
         _controller.reverse();
@@ -69,13 +72,30 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
   Widget _createAnimatedGlitterPiece(){
-    final random = math.Random();
-    final pieceSize = 10.0;
-    final piece = AnimatedBuilder(animation: _animation, builder: (BuildContext context, Widget widget){
-      return Container(width: pieceSize, height: pieceSize, color: _animation.value,);
+    final colorTween = ColorTween(begin: _getRandomColor(), end: Colors.transparent);
+    final animation = colorTween.animate(_controller);
+    final pieceSize = 4.0;
+    final piece = AnimatedBuilder(animation: animation, builder: (BuildContext context, Widget widget){
+      return Container(width: pieceSize, height: pieceSize, color: animation.value,);
     });
-    final topOffSet = random.nextDouble() * (_width - pieceSize);
-    final leftOffSet = random.nextDouble() * (_height - pieceSize);
+    final topOffSet = _random.nextDouble() * (_height - pieceSize);
+    final leftOffSet = _random.nextDouble() * (_width - pieceSize);
+    return Positioned(
+      top: topOffSet,
+      left: leftOffSet,
+      child: piece,
+    );
+  }
+
+  Widget _createReverseAnimatedGlitterPiece(){
+    final colorTween = ColorTween(begin: Colors.transparent, end:_getRandomColor());
+    final animation = colorTween.animate(_controller);
+    final pieceSize = 7.0;
+    final piece = AnimatedBuilder(animation: animation, builder: (BuildContext context, Widget widget){
+      return Container(width: pieceSize, height: pieceSize, color: animation.value,);
+    });
+    final topOffSet = _random.nextDouble() * (_height - pieceSize);
+    final leftOffSet = _random.nextDouble() * (_width - pieceSize);
     return Positioned(
       top: topOffSet,
       left: leftOffSet,
@@ -84,11 +104,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
   Widget _createStaticGlitterPiece(){
-    final random = math.Random();
     final pieceSize = 10.0;
-    final piece = Container(width: pieceSize, height: pieceSize, color: Colors.blue,);
-    final topOffSet = random.nextDouble() * (_width - pieceSize);
-    final leftOffSet = random.nextDouble() * (_height - pieceSize);
+    final piece = Container(width: pieceSize, height: pieceSize, color: _getRandomColor(),);
+    final topOffSet = _random.nextDouble() * (_height - pieceSize);
+    final leftOffSet = _random.nextDouble() * (_width - pieceSize);
     return Positioned(
       top: topOffSet,
       left: leftOffSet,
@@ -103,6 +122,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     }
     for(var i = 0; i < numPieces; i++){
       pieces.add(_createAnimatedGlitterPiece());
+    }
+    for(var i = 0; i < numPieces; i++){
+      pieces.add(_createReverseAnimatedGlitterPiece());
     }
     return pieces;
   }
@@ -120,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
           width: _width,
           color: Colors.pink[100],
           child: Stack(
-            children: _createGlitterPieces(10),
+            children: _createGlitterPieces(1000),
           ),
         ),
       )
